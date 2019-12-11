@@ -60,10 +60,18 @@ RUN pip install --no-cache-dir flaat && \
 # Disable FLAAT authentication by default
 ENV DISABLE_AUTHENTICATION_AND_ASSUME_AUTHENTICATED_USER yes
 
-# Install DEEPaaS from PyPi:
-RUN pip install --no-cache-dir "deepaas<1.0" && \
+## Install DEEPaaS from PyPi:
+#RUN pip install --no-cache-dir "deepaas<1.0" && \
+#    rm -rf /root/.cache/pip/* && \
+#    rm -rf /tmp/*
+
+# Temporarily install WIP_v2 branch of DEEPaaS
+RUN git clone https://github.com/indigo-dc/deepaas && \
+    cd deepaas && \
+    pip install --no-cache-dir -e . && \
     rm -rf /root/.cache/pip/* && \
-    rm -rf /tmp/*
+    rm -rf /tmp/* && \
+    cd ..
 
 # Useful tool to debug extensions loading
 RUN pip install --no-cache-dir entry_point_inspector && \
@@ -81,8 +89,20 @@ RUN if [ "$jlab" = true ]; then \
        git clone https://github.com/deephdc/deep-jupyter /srv/.jupyter ; \
     else echo "[INFO] Skip JupyterLab installation!"; fi
 
-# Install user app:
-RUN git clone -b $branch https://github.com/deephdc/posenet-tf.git && \
+## Install user app:
+#RUN git clone -b $branch https://github.com/deephdc/posenet-tf.git && \
+#    cd posenet-tf && \
+#    pip install --no-cache-dir -e . && \
+#    rm -rf /root/.cache/pip/* && \
+#    rm -rf /tmp/* && \
+#    cd ..
+
+# Update OpenCV packages
+RUN apt-get update && \
+    apt-get install -y libsm6 libxext6 libxrender-dev
+
+# Temporarily install v2 branch (we do not use the 'branch' arg because it is overwritten by Jenkins)
+RUN git clone -b deepaas_v2 https://github.com/deephdc/posenet-tf && \
     cd posenet-tf && \
     pip install --no-cache-dir -e . && \
     rm -rf /root/.cache/pip/* && \
